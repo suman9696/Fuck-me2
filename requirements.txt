@@ -1,5 +1,1 @@
-git+https://github.com/PyrogramMod/PyrogramMod.git
-tgcrypto
-flask
-gunicorn==20.1.0
-aiohttp
+wzgram
