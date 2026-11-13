@@ -5,6 +5,15 @@ import re
 import time
 from os import environ
 from urllib.parse import urlparse
+import threading
+
+# Install uvloop before creating any WZGram clients (Linux/Heroku only).
+try:
+    import uvloop
+    uvloop.install()
+    print("uvloop enabled")
+except ImportError:
+    print("uvloop unavailable; using the default asyncio event loop")
 
 from wzgram import Client, filters
 from pyrogram.errors import (
@@ -24,10 +33,10 @@ API_HASH = environ["HASH"]
 API_ID = int(environ["ID"])
 SESSION_STRING = environ.get("STRING", "").strip()
 
-# WZGram has its own parallel media transfer engine. Start conservatively;
-# increase only after testing on your Heroku dyno and Telegram account.
+# WZGram has its own parallel media transfer engine. This setting caps
+# simultaneous transfers; it does not directly set per-file chunk workers.
 MAX_CONCURRENT_TRANSMISSIONS = max(
-    1, min(16, int(environ.get("MAX_CONCURRENT_TRANSMISSIONS", "8")))
+    1, min(16, int(environ.get("MAX_CONCURRENT_TRANSMISSIONS", "16")))
 )
 
 bot = Client(
@@ -203,16 +212,30 @@ class TransferProgress:
         self.last_bytes = 0
         self.speed = 0.0
         self.last_edit = 0.0
+        self._callback_lock = threading.Lock()
+        self._last_scheduled = 0.0
 
     def __call__(self, current, total):
-        # WZGram may invoke progress callbacks from a concurrent.futures
-        # worker thread. A synchronous callback avoids an un-awaited
-        # coroutine; schedule the Telegram edit safely on the main loop.
+        # WZGram may call this from transfer worker threads. Throttle BEFORE
+        # scheduling to the event loop so thousands of chunks cannot create
+        # a backlog of progress-update coroutines.
         if self.loop.is_closed():
             return
+
+        now = time.monotonic()
+        with self._callback_lock:
+            is_final = bool(total and current >= total)
+            if not is_final and now - self._last_scheduled < 1.0:
+                return
+            self._last_scheduled = now
+
         try:
-            asyncio.run_coroutine_threadsafe(
+            future = asyncio.run_coroutine_threadsafe(
                 self._update(current, total), self.loop
+            )
+            # Do not wait on the future from the transfer worker thread.
+            future.add_done_callback(
+                lambda f: f.exception() if not f.cancelled() else None
             )
         except RuntimeError:
             pass
