@@ -193,17 +193,31 @@ def _target_value():
 
 
 class TransferProgress:
-    """Throttled progress updates; callback is async as supported by WZGram."""
+    """Thread-safe progress callback for WZGram transfer worker threads."""
 
     def __init__(self, status_message, label):
         self.status_message = status_message
         self.label = label
+        self.loop = asyncio.get_running_loop()
         self.last_time = 0.0
         self.last_bytes = 0
         self.speed = 0.0
         self.last_edit = 0.0
 
-    async def __call__(self, current, total):
+    def __call__(self, current, total):
+        # WZGram may invoke progress callbacks from a concurrent.futures
+        # worker thread. A synchronous callback avoids an un-awaited
+        # coroutine; schedule the Telegram edit safely on the main loop.
+        if self.loop.is_closed():
+            return
+        try:
+            asyncio.run_coroutine_threadsafe(
+                self._update(current, total), self.loop
+            )
+        except RuntimeError:
+            pass
+
+    async def _update(self, current, total):
         if not total:
             return
 
