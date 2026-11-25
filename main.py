@@ -917,18 +917,6 @@ https://t.me/channelusername/101-110
 Choose one or more media types, then press **Done** to start.
 Press **❌ Cancel** to cancel media selection. Deleted or unavailable posts are skipped.
 
-**📚 𝐀𝐥𝐥 𝐂𝐨𝐦𝐦𝐚𝐧𝐝𝐬**
-/start - Start the bot and show usage
-/h - Show all commands
-/help - Show all commands
-/recent @groupusername - Get the latest post link
-/settarget -1001234567890 - Set auto-upload destination
-/mytargets - Show current target and auto-upload status
-/removetarget - Remove auto-upload destination
-/autoupload on - Enable auto-upload
-/autoupload off - Disable auto-upload
-
-**Target commands are available in private chat.**
 """
 
 
