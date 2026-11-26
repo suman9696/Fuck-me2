@@ -349,7 +349,7 @@ async def send_start(client, message):
         reply_markup=InlineKeyboardMarkup(
             [[InlineKeyboardButton(
                 "☢️ 𝐁𝐨𝐭 𝐃𝐞𝐯𝐞𝐥𝐨𝐩𝐞𝐫",
-                url="tg://openmessage?user_id=2112247533",
+                url="tg://openmessage?user_id=7771180127",
             )]]
         ),
         reply_to_message_id=message.id,
