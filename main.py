@@ -344,8 +344,8 @@ async def send_start(client, message):
         f"**♻️ 𝙷𝚒** **{message.from_user.mention}**, "
         "**𝐈 𝐚𝐦 𝐒𝐚𝐯𝐞 𝐑𝐞𝐬𝐭𝐫𝐢𝐜𝐭𝐞𝐝 𝐁𝐨𝐭, 𝐈 𝐜𝐚𝐧 𝐬𝐞𝐧𝐝 𝐲𝐨𝐮 "
         "𝐫𝐞𝐬𝐭𝐫𝐢𝐜𝐭𝐞𝐝 𝐜𝐨𝐧𝐭𝐞𝐧𝐭 𝐛𝐲 𝐢𝐭'𝐬 𝐩𝐨𝐬𝐭 𝐥𝐢𝐧𝐤**\n\n"
-        "Send a Telegram post link to get started.\\n"
-        "Use **/h** to view all commands and usage instructions.",
+        "Send a Telegram post link to get started.\n\n"
+        ,
         reply_markup=InlineKeyboardMarkup(
             [[InlineKeyboardButton(
                 "☢️ 𝐁𝐨𝐭 𝐃𝐞𝐯𝐞𝐥𝐨𝐩𝐞𝐫",
